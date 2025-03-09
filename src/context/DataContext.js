@@ -5,293 +5,212 @@ const DataContext = createContext();
 
 export function DataProvider({ children }) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // BIM Operations
-  const addBim = async (bimData) => {
+  // Generic fetch function
+  const fetchData = async (table) => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('bims')
-        .insert([bimData]);
+        .from(table)
+        .select('*')
+        .order('created_at', { ascending: false });
+      
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error adding BIM:', error);
+      setError(error.message);
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const getBims = async () => {
+  // Generic add function
+  const addData = async (table, data) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('bims')
-        .select('*');
+      const { data: result, error } = await supabase
+        .from(table)
+        .insert([data])
+        .select();
+      
       if (error) throw error;
-      return data;
+      return result[0];
     } catch (error) {
-      console.error('Error fetching BIMs:', error);
+      setError(error.message);
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const updateBim = async (id, bimData) => {
+  // Generic update function
+  const updateData = async (table, id, data) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('bims')
-        .update(bimData)
-        .eq('id', id);
+      const { data: result, error } = await supabase
+        .from(table)
+        .update(data)
+        .eq('id', id)
+        .select();
+      
       if (error) throw error;
-      return data;
+      return result[0];
     } catch (error) {
-      console.error('Error updating BIM:', error);
+      setError(error.message);
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteBim = async (id) => {
+  // Generic delete function
+  const deleteData = async (table, id) => {
     try {
       setLoading(true);
       const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Specific table operations
+  // Enhanced BIM operations
+  const bimOperations = {
+    add: (data) => addData('bims', {
+      ...data,
+      pending_taka: Math.floor(data.bim_meter / data.par_taka),
+      pending_meter: data.bim_meter
+    }),
+    update: (id, data) => updateData('bims', id, data),
+    delete: (id) => deleteData('bims', id),
+    fetch: () => fetchData('bims'),
+    fetchByMachine: async (machineNumber) => {
+      const { data, error } = await supabase
         .from('bims')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting BIM:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Worker Operations
-  const addWorker = async (workerData) => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('workers')
-        .insert([workerData]);
+        .select('*')
+        .eq('machine_number', machineNumber);
       if (error) throw error;
       return data;
-    } catch (error) {
-      console.error('Error adding worker:', error);
-      throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
-  const getWorkers = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('workers')
-        .select('*');
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error fetching workers:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateWorker = async (id, workerData) => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('workers')
-        .update(workerData)
-        .eq('id', id);
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error updating worker:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteWorker = async (id) => {
-    try {
-      setLoading(true);
-      const { error } = await supabase
-        .from('workers')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting worker:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Machine Operations
-  const addMachine = async (machineData) => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('machines')
-        .insert([machineData]);
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error adding machine:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getMachines = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('machines')
-        .select('*');
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error fetching machines:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateMachine = async (id, machineData) => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('machines')
-        .update(machineData)
-        .eq('id', id);
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error updating machine:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteMachine = async (id) => {
-    try {
-      setLoading(true);
-      const { error } = await supabase
-        .from('machines')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting machine:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Production Operations
-  const addProduction = async (productionData) => {
-    try {
-      setLoading(true);
+  // Enhanced Worker operations
+  const workerOperations = {
+    add: (data) => addData('workers', data),
+    update: (id, data) => updateData('workers', id, data),
+    delete: (id) => deleteData('workers', id),
+    fetch: () => fetchData('workers'),
+    fetchTopWorkers: async (startDate, endDate) => {
       const { data, error } = await supabase
         .from('production')
-        .insert([productionData]);
+        .select(`
+          worker1_production,
+          worker2_production,
+          worker3_production,
+          workers(name)
+        `)
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: true });
       if (error) throw error;
       return data;
-    } catch (error) {
-      console.error('Error adding production:', error);
-      throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
-  const getProductions = async () => {
-    try {
-      setLoading(true);
+  // Enhanced Machine operations
+  const machineOperations = {
+    add: async (data) => {
+      const result = await addData('machines', data);
+      // Update workers with machine number
+      if (data.worker1_id) {
+        await updateData('workers', data.worker1_id, { machine_number: data.machine_number });
+      }
+      if (data.worker2_id) {
+        await updateData('workers', data.worker2_id, { machine_number: data.machine_number });
+      }
+      if (data.worker3_id) {
+        await updateData('workers', data.worker3_id, { machine_number: data.machine_number });
+      }
+      return result;
+    },
+    update: (id, data) => updateData('machines', id, data),
+    delete: (id) => deleteData('machines', id),
+    fetch: () => fetchData('machines'),
+    fetchWithWorkers: async () => {
+      const { data, error } = await supabase
+        .from('machines')
+        .select(`
+          *,
+          workers!worker1_id(name),
+          workers!worker2_id(name),
+          workers!worker3_id(name)
+        `);
+      if (error) throw error;
+      return data;
+    }
+  };
+
+  // Enhanced Production operations
+  const productionOperations = {
+    add: async (data) => {
+      // Calculate total production
+      const totalProduction = 
+        parseFloat(data.worker1_production || 0) +
+        parseFloat(data.worker2_production || 0) +
+        parseFloat(data.worker3_production || 0);
+
+      // Update BIM pending meters and taka
+      const bim = await supabase
+        .from('bims')
+        .select('*')
+        .eq('bim_number', data.bim_number)
+        .single();
+
+      if (bim.data) {
+        await updateData('bims', bim.data.id, {
+          pending_meter: bim.data.pending_meter - totalProduction,
+          pending_taka: bim.data.pending_taka - 1
+        });
+      }
+
+      return addData('production', {
+        ...data,
+        total_production: totalProduction,
+        wet_per_meter: data.wet ? data.wet / totalProduction : 0
+      });
+    },
+    update: (id, data) => updateData('production', id, data),
+    delete: (id) => deleteData('production', id),
+    fetch: () => fetchData('production'),
+    fetchByDateRange: async (startDate, endDate) => {
       const { data, error } = await supabase
         .from('production')
-        .select('*');
+        .select('*')
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: true });
       if (error) throw error;
       return data;
-    } catch (error) {
-      console.error('Error fetching productions:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateProduction = async (id, productionData) => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('production')
-        .update(productionData)
-        .eq('id', id);
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error updating production:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteProduction = async (id) => {
-    try {
-      setLoading(true);
-      const { error } = await supabase
-        .from('production')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting production:', error);
-      throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
   const value = {
     loading,
-    // BIM operations
-    addBim,
-    getBims,
-    updateBim,
-    deleteBim,
-    // Worker operations
-    addWorker,
-    getWorkers,
-    updateWorker,
-    deleteWorker,
-    // Machine operations
-    addMachine,
-    getMachines,
-    updateMachine,
-    deleteMachine,
-    // Production operations
-    addProduction,
-    getProductions,
-    updateProduction,
-    deleteProduction
+    error,
+    bimOperations,
+    workerOperations,
+    machineOperations,
+    productionOperations,
   };
 
   return (
