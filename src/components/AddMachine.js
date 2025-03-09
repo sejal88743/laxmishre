@@ -1,29 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, TextField, Button, Paper, Typography, Grid, MenuItem, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import { getNextMachineNumber, validateAndRegisterNumber } from '../utils/numberGenerator';
+import { useData } from '../context/DataContext';
 
 const AddMachine = () => {
-  // Mock data for demonstration
-  const bimList = [
-    { id: 1, number: 'BIM001' },
-    { id: 2, number: 'BIM002' },
-    { id: 3, number: 'BIM003' },
-  ];
+  const { loading, addMachine, getMachines, updateMachine, deleteMachine, getBims, getWorkers } = useData();
+  const [machineList, setMachineList] = useState([]);
+  const [bimList, setBimList] = useState([]);
+  const [workerList, setWorkerList] = useState([]);
 
-  const workerList = [
-    { id: 1, name: 'Worker 1' },
-    { id: 2, name: 'Worker 2' },
-    { id: 3, name: 'Worker 3' },
-    { id: 4, name: 'Worker 4' },
-  ];
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  // Mock data for machine list
-  const machineList = [
-    { machineNumber: 'M001', bimNumber: 'BIM001', productionRate: 100, worker1: 'Worker 1', worker2: 'Worker 2', worker3: 'Worker 3' },
-    { machineNumber: 'M002', bimNumber: 'BIM002', productionRate: 120, worker1: 'Worker 2', worker2: 'Worker 3', worker3: 'Worker 4' },
-    { machineNumber: 'M003', bimNumber: 'BIM003', productionRate: 110, worker1: 'Worker 3', worker2: 'Worker 4', worker3: 'Worker 1' },
-  ];
+  const fetchData = async () => {
+    try {
+      const [machines, bims, workers] = await Promise.all([
+        getMachines(),
+        getBims(),
+        getWorkers()
+      ]);
+      setMachineList(machines || []);
+      setBimList(bims || []);
+      setWorkerList(workers || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const [machineData, setMachineData] = useState({
     machineNumber: '',
@@ -61,48 +65,57 @@ const AddMachine = () => {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validate that all required fields are filled
     if (!machineData.machineNumber || !machineData.bimNumber || 
         !machineData.productionRate || !machineData.worker1 || 
         !machineData.worker2 || !machineData.worker3) {
       setError('All fields are required');
       return;
     }
-    
-    // Log the machine data (in a real app, this would be sent to a backend)
-    console.log('Machine Data:', machineData);
-    
-    // Reset form after successful submission
-    setMachineData({
-      machineNumber: '',
-      bimNumber: '',
-      productionRate: '',
-      worker1: '',
-      worker2: '',
-      worker3: ''
-    });
-    setError('');
+
+    try {
+      await addMachine(machineData);
+      await fetchData();
+      setMachineData({
+        machineNumber: '',
+        bimNumber: '',
+        productionRate: '',
+        worker1: '',
+        worker2: '',
+        worker3: ''
+      });
+      setError('');
+    } catch (error) {
+      console.error('Error submitting machine:', error);
+      setError('Error adding machine');
+    }
   };
 
-  const handleEdit = (machine) => {
-    console.log('Editing machine:', machine);
-    // Set the form data with the selected machine's values
-    setMachineData({
-      machineNumber: machine.machineNumber,
-      bimNumber: machine.bimNumber,
-      productionRate: machine.productionRate,
-      worker1: machine.worker1,
-      worker2: machine.worker2,
-      worker3: machine.worker3
-    });
+  const handleEdit = async (machine) => {
+    try {
+      await updateMachine(machine.id, machine);
+      await fetchData();
+      setMachineData({
+        machineNumber: machine.machineNumber,
+        bimNumber: machine.bimNumber,
+        productionRate: machine.productionRate,
+        worker1: machine.worker1,
+        worker2: machine.worker2,
+        worker3: machine.worker3
+      });
+    } catch (error) {
+      console.error('Error updating machine:', error);
+    }
   };
 
-  const handleDelete = (machine) => {
-    console.log('Deleting machine:', machine);
-    // Here you would typically make an API call to delete the machine
-    // and then refresh the list
+  const handleDelete = async (machine) => {
+    try {
+      await deleteMachine(machine.id);
+      await fetchData();
+    } catch (error) {
+      console.error('Error deleting machine:', error);
+    }
   };
 
   return (

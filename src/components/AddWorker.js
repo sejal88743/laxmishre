@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, TextField, Button, Paper, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
+import { useData } from '../context/DataContext';
 
 const AddWorker = () => {
   const [workerData, setWorkerData] = useState({
@@ -9,12 +10,21 @@ const AddWorker = () => {
     machineNumber: '',
   });
 
-  // Mock data for worker list
-  const workerList = [
-    { workerName: 'Worker 1', mobileNumber: '1234567890', machineNumber: 'M001' },
-    { workerName: 'Worker 2', mobileNumber: '2345678901', machineNumber: 'M002' },
-    { workerName: 'Worker 3', mobileNumber: '3456789012', machineNumber: 'M003' },
-  ];
+  const { loading, addWorker, getWorkers, updateWorker, deleteWorker } = useData();
+  const [workerList, setWorkerList] = useState([]);
+
+  useEffect(() => {
+    fetchWorkers();
+  }, []);
+
+  const fetchWorkers = async () => {
+    try {
+      const data = await getWorkers();
+      setWorkerList(data || []);
+    } catch (error) {
+      console.error('Error fetching workers:', error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,25 +34,42 @@ const AddWorker = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Worker Data:', workerData);
+    try {
+      await addWorker(workerData);
+      await fetchWorkers();
+      setWorkerData({
+        workerName: '',
+        mobileNumber: '',
+        machineNumber: ''
+      });
+    } catch (error) {
+      console.error('Error submitting worker:', error);
+    }
   };
 
-  const handleEdit = (worker) => {
-    console.log('Editing worker:', worker);
-    // Set the form data with the selected worker's values
-    setWorkerData({
-      workerName: worker.workerName,
-      mobileNumber: worker.mobileNumber,
-      machineNumber: worker.machineNumber
-    });
+  const handleEdit = async (worker) => {
+    try {
+      await updateWorker(worker.id, worker);
+      await fetchWorkers();
+      setWorkerData({
+        workerName: worker.workerName,
+        mobileNumber: worker.mobileNumber,
+        machineNumber: worker.machineNumber
+      });
+    } catch (error) {
+      console.error('Error updating worker:', error);
+    }
   };
 
-  const handleDelete = (worker) => {
-    console.log('Deleting worker:', worker);
-    // Here you would typically make an API call to delete the worker
-    // and then refresh the list
+  const handleDelete = async (worker) => {
+    try {
+      await deleteWorker(worker.id);
+      await fetchWorkers();
+    } catch (error) {
+      console.error('Error deleting worker:', error);
+    }
   };
 
   return (

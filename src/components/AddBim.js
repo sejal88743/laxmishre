@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, TextField, Button, Paper, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { getNextBimNumber, validateAndRegisterNumber } from '../utils/numberGenerator';
 import { IconButton } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
+import { useData } from '../context/DataContext';
 
 const AddBim = () => {
   const [bimData, setBimData] = useState({
@@ -15,12 +16,21 @@ const AddBim = () => {
 
   const [error, setError] = useState('');
 
-  // Mock data for BIM list
-  const bimList = [
-    { bimNumber: 'BIM001', bimMeter: 1000, parTaka: 50, bimTaka: 20, loadDate: '2024-01-15', machineNumber: 'M001', pendingTaka: 20, pendingMeter: 1000 },
-    { bimNumber: 'BIM002', bimMeter: 1500, parTaka: 60, bimTaka: 25, loadDate: '2024-01-16', machineNumber: 'M002', pendingTaka: 25, pendingMeter: 1500 },
-    { bimNumber: 'BIM003', bimMeter: 2000, parTaka: 40, bimTaka: 50, loadDate: '2024-01-17', machineNumber: 'M003', pendingTaka: 50, pendingMeter: 2000 },
-  ];
+  const { loading, addBim, getBims, updateBim, deleteBim } = useData();
+  const [bimList, setBimList] = useState([]);
+
+  useEffect(() => {
+    fetchBims();
+  }, []);
+
+  const fetchBims = async () => {
+    try {
+      const data = await getBims();
+      setBimList(data || []);
+    } catch (error) {
+      console.error('Error fetching BIMs:', error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,26 +57,53 @@ const AddBim = () => {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const bimTaka = bimData.bimMeter / bimData.parTaka;
-    console.log('BIM Data:', { ...bimData, bimTaka, pendingTaka: bimTaka, pendingMeter: bimData.bimMeter });
+    try {
+      const bimTaka = bimData.bimMeter / bimData.parTaka;
+      const newBimData = {
+        ...bimData,
+        bimTaka,
+        pendingTaka: bimTaka,
+        pendingMeter: bimData.bimMeter
+      };
+      await addBim(newBimData);
+      await fetchBims();
+      setBimData({
+        bimNumber: '',
+        bimMeter: '',
+        parTaka: '',
+        loadDate: new Date().toISOString().split('T')[0],
+        machineNumber: ''
+      });
+    } catch (error) {
+      console.error('Error submitting BIM:', error);
+    }
   };
 
-  const handleEdit = (bim) => {
-    setBimData({
-      bimNumber: bim.bimNumber,
-      bimMeter: bim.bimMeter,
-      parTaka: bim.parTaka,
-      loadDate: bim.loadDate,
-      machineNumber: bim.machineNumber
-    });
+  const handleEdit = async (bim) => {
+    try {
+      await updateBim(bim.id, bim);
+      await fetchBims();
+      setBimData({
+        bimNumber: bim.bimNumber,
+        bimMeter: bim.bimMeter,
+        parTaka: bim.parTaka,
+        loadDate: bim.loadDate,
+        machineNumber: bim.machineNumber
+      });
+    } catch (error) {
+      console.error('Error updating BIM:', error);
+    }
   };
 
-  const handleDelete = (bim) => {
-    console.log('Deleting BIM:', bim);
-    // Here you would typically make an API call to delete the BIM
-    // and then refresh the list
+  const handleDelete = async (bim) => {
+    try {
+      await deleteBim(bim.id);
+      await fetchBims();
+    } catch (error) {
+      console.error('Error deleting BIM:', error);
+    }
   };
 
   return (
