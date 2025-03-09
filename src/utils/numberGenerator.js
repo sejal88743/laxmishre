@@ -48,12 +48,38 @@ export const getNextTakaNumber = () => {
 
 // Validate and register a custom number
 export const validateAndRegisterNumber = (type, number) => {
-  if (!isNumberUnique(type.toLowerCase(), number)) {
-    return { isValid: false, message: `${type} number ${number} already exists` };
+  // Basic format validation
+  const formatValidation = {
+    bim: /^BIM\d{3}$/,
+    machine: /^M\d{3}$/,
+    taka: /^T\d{3}$/
+  };
+
+  // Check format
+  if (!formatValidation[type].test(number)) {
+    return {
+      isValid: false,
+      message: `Invalid ${type} number format. Expected format: ${type === 'bim' ? 'BIM001' : type === 'machine' ? 'M001' : 'T001'}`,
+      mode: 'create'
+    };
   }
-  
-  existingNumbers[type.toLowerCase()].add(number);
-  return { isValid: true };
+
+  // Check if number exists
+  if (existingNumbers[type].has(number)) {
+    return {
+      isValid: true,
+      message: `${type.toUpperCase()} number already exists`,
+      mode: 'edit'
+    };
+  }
+
+  // Register new number
+  existingNumbers[type].add(number);
+  return {
+    isValid: true,
+    message: '',
+    mode: 'create'
+  };
 };
 
 // Reset a number (for testing or administrative purposes)

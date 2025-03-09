@@ -1,9 +1,30 @@
+import React, { useState, useEffect } from 'react';
 import { Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
+import { useData } from '../context/DataContext';
 
 const ProductionList = () => {
-  // Mock data for demonstration
-  const productionData = [
+  const { getProductions, loading } = useData();
+  const [productionData, setProductionData] = useState([]);
+
+  useEffect(() => {
+    const fetchProductions = async () => {
+      try {
+        const data = await getProductions();
+        setProductionData(data || []);
+      } catch (error) {
+        console.error('Error fetching productions:', error);
+      }
+    };
+    fetchProductions();
+  }, [getProductions]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Production data from API
+  const productions = productionData.length ? productionData : [
     { 
       date: '2024-01-01', 
       takaNumber: 'T001',

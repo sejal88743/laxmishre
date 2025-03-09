@@ -101,10 +101,10 @@ const AddProduction = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Date</TableCell>
-              <TableCell align="right">Worker 1</TableCell>
-              <TableCell align="right">Worker 2</TableCell>
-              <TableCell align="right">Worker 3</TableCell>
+              <TableCell style={{padding: '8px'}}>Date</TableCell>
+              <TableCell align="right" style={{padding: '8px'}}>Worker 1</TableCell>
+              <TableCell align="right" style={{padding: '8px'}}>Worker 2</TableCell>
+              <TableCell align="right" style={{padding: '8px'}}>Worker 3</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -119,6 +119,11 @@ const AddProduction = () => {
                       value={row[worker]}
                       onChange={(e) => handleCellChange(index, worker, e.target.value, isFirstHalf)}
                       sx={{ width: '80px' }}
+                      inputProps={{
+                        inputMode: 'numeric',
+                        pattern: '[0-9]*',
+                        style: { textAlign: 'right' }
+                      }}
                     />
                   </TableCell>
                 ))}
@@ -208,26 +213,7 @@ const AddProduction = () => {
                 disabled
               />
             </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="Total Meter"
-                name="totalMeter"
-                type="number"
-                value={productionData.totalMeter}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="Wet Value"
-                name="wetValue"
-                type="number"
-                value={productionData.wetValue}
-                onChange={handleChange}
-              />
-            </Grid>
+
             <Grid item xs={12} md={4}>
               <Button
                 variant="contained"
@@ -275,6 +261,54 @@ const AddProduction = () => {
               setData={setSecondHalfProduction}
               title="Production (16th to End)"
             />
+          </Box>
+
+          <Box sx={{ mt: 4, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  label="Total Meter"
+                  name="totalMeter"
+                  type="number"
+                  value={productionData.totalMeter}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  label="Wet Value"
+                  name="wetValue"
+                  type="number"
+                  value={productionData.wetValue}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSave}
+                    disabled={!productionData.totalMeter || !productionData.wetValue}
+                    fullWidth
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={handleEdit}
+                    fullWidth
+                  >
+                    Edit
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
           </Box>
         </Box>
       </Paper>

@@ -21,11 +21,20 @@ const AddMachine = () => {
         getBims(),
         getWorkers()
       ]);
-      setMachineList(machines || []);
+      console.log('Fetched machines:', machines); // Debug log
+      if (!machines) {
+        console.error('No machines data received');
+        return;
+      }
+      if (machines.length === 0) {
+        console.log('Machine list is empty');
+      }
+      setMachineList(machines);
       setBimList(bims || []);
       setWorkerList(workers || []);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setError('Error loading machine data');
     }
   };
 
@@ -49,6 +58,20 @@ const AddMachine = () => {
         return;
       }
       setError('');
+      // If the number exists, switch to edit mode
+      if (validation.mode === 'edit') {
+        const existingMachine = machineList.find(machine => machine.machineNumber === value);
+        if (existingMachine) {
+          setMachineData({
+            machineNumber: existingMachine.machineNumber,
+            bimNumber: existingMachine.bimNumber,
+            productionRate: existingMachine.productionRate,
+            worker1: existingMachine.worker1,
+            worker2: existingMachine.worker2,
+            worker3: existingMachine.worker3
+          });
+        }
+      }
     }
     setMachineData(prev => ({
       ...prev,

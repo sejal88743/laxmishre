@@ -1,6 +1,44 @@
-import { Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Card, CardContent, Grid } from '@mui/material';
+import { useState } from 'react';
 
 const Home = () => {
+  const [productionData] = useState({
+    daily: [
+      { name: 'Today', meters: 1200 },
+      { name: 'Yesterday', meters: 1100 },
+    ],
+    weekly: [
+      { name: 'This Week', meters: 7500 },
+      { name: 'Last Week', meters: 7000 },
+    ],
+    monthly: [
+      { name: 'This Month', meters: 30000 },
+      { name: 'Last Month', meters: 28000 },
+    ]
+  });
+
+  const cardColors = {
+    daily: '#1976d2',    // Blue
+    weekly: '#9c27b0',   // Purple
+    monthly: '#2e7d32'   // Green
+  };
+
+  const MetricCard = ({ title, data, color }) => (
+    <Card sx={{ height: '100%', backgroundColor: color, color: 'white' }}>
+      <CardContent>
+        <Typography variant="h6" gutterBottom>
+          {title}
+        </Typography>
+        <Typography variant="h4">
+          {data[0].meters.toLocaleString()} m
+        </Typography>
+        <Typography variant="body2">
+          vs {data[1].meters.toLocaleString()} m
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+
   // Mock data for demonstration
   const firstHalfWorkers = [
     { name: 'Worker 1', meters: 500, salary: 10000 },
@@ -49,6 +87,31 @@ const Home = () => {
       <Typography variant="h4" gutterBottom>
         Production Dashboard
       </Typography>
+
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={4}>
+          <MetricCard 
+            title="Daily Production" 
+            data={productionData.daily}
+            color={cardColors.daily}
+          />
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <MetricCard 
+            title="Weekly Production" 
+            data={productionData.weekly}
+            color={cardColors.weekly}
+          />
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <MetricCard 
+            title="Monthly Production" 
+            data={productionData.monthly}
+            color={cardColors.monthly}
+          />
+        </Grid>
+      </Grid>
+
       <Box sx={{ display: 'flex', gap: 2 }}>
         <WorkerTable
           title="Top Workers (1st to 15th of Month)"

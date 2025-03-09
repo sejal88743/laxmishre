@@ -19,7 +19,20 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 
 export default function Workers() {
-  const { workers, addWorker, updateWorker, loading } = useData();
+  const { getWorkers, addWorker, updateWorker, loading } = useData();
+  const [workers, setWorkers] = useState([]);
+
+  React.useEffect(() => {
+    const fetchWorkers = async () => {
+      try {
+        const data = await getWorkers();
+        setWorkers(data || []);
+      } catch (error) {
+        console.error('Error fetching workers:', error);
+      }
+    };
+    fetchWorkers();
+  }, [getWorkers]);
   const [open, setOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [currentWorker, setCurrentWorker] = useState(null);

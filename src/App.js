@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
+import { DataProvider } from './context/DataContext';
 import TopBar from './components/TopBar';
 import Home from './components/Home';
 import AddBim from './components/AddBim';
@@ -25,18 +26,20 @@ const theme = createTheme({
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      <Router>
-        <TopBar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/add-bim" element={<AddBim />} />
-          <Route path="/add-worker" element={<AddWorker />} />
-          <Route path="/add-machine" element={<AddMachine />} />
-          <Route path="/add-production" element={<AddProduction />} />
-          <Route path="/production-list" element={<ProductionList />} />
-          <Route path="/report" element={<Report />} />
-        </Routes>
-      </Router>
+      <DataProvider>
+        <Router>
+          <TopBar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/add-bim" element={<AddBim />} />
+            <Route path="/add-worker" element={<AddWorker />} />
+            <Route path="/add-machine" element={<AddMachine />} />
+            <Route path="/add-production" element={<AddProduction />} />
+            <Route path="/production-list" element={<ProductionList />} />
+            <Route path="/report" element={<Report />} />
+          </Routes>
+        </Router>
+      </DataProvider>
     </ThemeProvider>
   );
 }

@@ -41,6 +41,19 @@ const AddBim = () => {
         return;
       }
       setError('');
+      // If the number exists, switch to edit mode
+      if (validation.mode === 'edit') {
+        const existingBim = bimList.find(bim => bim.bimNumber === value);
+        if (existingBim) {
+          setBimData({
+            bimNumber: existingBim.bimNumber,
+            bimMeter: existingBim.bimMeter,
+            parTaka: existingBim.parTaka,
+            loadDate: existingBim.loadDate,
+            machineNumber: existingBim.machineNumber
+          });
+        }
+      }
     }
     setBimData(prev => ({
       ...prev,
@@ -194,8 +207,9 @@ const AddBim = () => {
                 fullWidth
                 size="small"
                 sx={{ height: '40px' }}
+                disabled={loading}
               >
-                Add BIM
+                {loading ? 'Adding...' : 'Add BIM'}
               </Button>
             </Grid>
           </Grid>

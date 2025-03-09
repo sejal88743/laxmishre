@@ -19,7 +19,20 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 
 export default function Machines() {
-  const { machines, addMachine, updateMachine, loading } = useData();
+  const { getMachines, addMachine, updateMachine, loading } = useData();
+  const [machines, setMachines] = useState([]);
+
+  React.useEffect(() => {
+    const fetchMachines = async () => {
+      try {
+        const data = await getMachines();
+        setMachines(data || []);
+      } catch (error) {
+        console.error('Error fetching machines:', error);
+      }
+    };
+    fetchMachines();
+  }, [getMachines]);
   const [open, setOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [currentMachine, setCurrentMachine] = useState(null);
